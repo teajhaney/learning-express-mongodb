@@ -28,9 +28,14 @@ app.use(methodOverride('_method'));
 
 // all products route
 app.get('/products', async (req, res) => {
-  const products = await Product.find({});
-  const category = await Product.find({}).distinct('category');
-  res.render('products/index', { products, category });
+  const { category } = req.query;
+  if (category) {
+    const products = await Product.find({ category });
+    res.render('products/index', { products, category });
+  } else {
+    const products = await Product.find({});
+    res.render('products/index', { products, category: 'All' });
+  }
 });
 
 //new products
@@ -70,11 +75,15 @@ app.get('/products/:id/edit', async (req, res) => {
 app.put('/products/:id', async (req, res) => {
   const id = req.params.id;
   const { name, price, category } = req.body;
-  await Product.findByIdAndUpdate(id, {
-    name,
-    price,
-    category,
-  });
+  await Product.findByIdAndUpdate(
+    id,
+    {
+      name,
+      price,
+      category,
+    },
+    { runValidators: true }
+  );
   res.redirect(`/products/${id}`);
 });
 
