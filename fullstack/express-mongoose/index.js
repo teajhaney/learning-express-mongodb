@@ -25,9 +25,23 @@ app.use(express.urlencoded({ extended: true }));
 //override post
 app.use(methodOverride('_method'));
 
+function wrappAsync(fn) {
+  return function (req, res, next) {
+    fn(req, res, next).catch(error => {
+      if (error.name === 'CastError') {
+        return next(new AppError(400, 'Invalid ID'));
+      } else if (error.name === 'ValidationError') {
+        return next(new AppError(400, error.message));
+      }
+      next(error);
+    });
+  };
+}
+
 // all products route
-app.get('/products', async (req, res) => {
-  try {
+app.get(
+  '/products',
+  wrappAsync(async (req, res) => {
     const { category } = req.query;
     if (category) {
       const products = await Product.find({ category });
@@ -36,56 +50,62 @@ app.get('/products', async (req, res) => {
       const products = await Product.find({});
       res.render('products/index', { products, category: 'All' });
     }
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Internal Server Error');
-  }
-});
+  })
+);
 
 //new products
-app.get('/products/new', async (req, res, next) => {
-  try {
+app.get(
+  '/products/new',
+  wrappAsync(async (req, res, next) => {
     const categories = await Product.find({}).distinct('category');
     res.render('products/new', { categories });
-  } catch (error) {
-    next(error);
-  }
-});
+  })
+);
 
 //add products
-app.post('/products', async (req, res, next) => {
-  try {
+app.post(
+  '/products',
+  wrappAsync(async (req, res, next) => {
     const { name, price, category } = req.body;
-    await Product.insertOne({
+    const product = await Product.insertOne({
       name,
       price,
       category,
     });
-    res.redirect('/products');
-  } catch (error) {
-    next(error);
-  }
-});
+    res.redirect(`/products/${product._id}`);
+  })
+);
 
 //products by id route
-app.get('/products/:id', async (req, res, next) => {
-  try {
+// app.get('/products/:id', async (req, res, next) => {
+//   try {
+//     const id = req.params.id;
+//     const product = await Product.findById(id);
+//     if (!product) {
+//       throw new new AppError(404, 'Product not found')();
+//     }
+//     res.render('products/show', { product });
+//   } catch (err) {
+//     if (err.name === 'CastError') {
+//       return next(new AppError(400, 'Invalid product ID'));
+//     }
+//     next(err);
+//   }
+// });
+app.get(
+  '/products/:id',
+  wrappAsync(async (req, res, next) => {
     const id = req.params.id;
     const product = await Product.findById(id);
     if (!product) {
-      return next(new AppError(404, 'Product not found'));
+      throw new new AppError(404, 'Product not found')();
     }
     res.render('products/show', { product });
-  } catch (err) {
-    if (err.name === 'CastError') {
-      return next(new AppError(400, 'Invalid product ID'));
-    }
-    next(err);
-  }
-});
+  })
+);
 
 //edit products
-app.get('/products/:id/edit', async (req, res) => {
+app.get('/products/:id/edit', async (req, res, next) => {
   try {
     const id = req.params.id;
     const product = await Product.findById(id);
@@ -100,8 +120,9 @@ app.get('/products/:id/edit', async (req, res) => {
 });
 
 //update products
-app.put('/products/:id', async (req, res, next) => {
-  try {
+app.put(
+  '/products/:id',
+  wrappAsync(async (req, res, next) => {
     const id = req.params.id;
     const { name, price, category } = req.body;
     await Product.findByIdAndUpdate(
@@ -114,22 +135,19 @@ app.put('/products/:id', async (req, res, next) => {
       { runValidators: true }
     );
     res.redirect(`/products/${id}`);
-  } catch (error) {
-    next(error);
-  }
-});
+  })
+);
 
 //update products
-app.delete('/products/:id', async (req, res, next) => {
-  try {
+app.delete(
+  '/products/:id',
+  wrappAsync(async (req, res, next) => {
     const id = req.params.id;
     //   const { name, price, category } = req.body;
-    const product = await Product.findByIdAndDelete(id);
-    res.redirect(`/products/${product._id}`);
-  } catch (error) {
-    next(error);
-  }
-});
+    await Product.findByIdAndDelete(id);
+    res.redirect('/products/');
+  })
+);
 
 app.use((err, req, res, next) => {
   const { statusCode = 501, message = 'Something went wrong' } = err;
