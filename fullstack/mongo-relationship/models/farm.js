@@ -82,10 +82,12 @@ const addProductToFarm = async (farmId, productId) => {
 
 // addProductToFarm();
 
-Farm.findOne({ name: 'Sunny Acres' }).then(farm => {
-  if (farm) {
-    console.log('Farm found:', farm);
-  } else {
-    console.log('Farm not found');
-  }
-});
+Farm.findOne({ name: 'Sunny Acres' })
+  .populate('products')
+  .then(farm => {
+    if (farm) {
+      console.log('Farm found:', farm);
+    } else {
+      console.log('Farm not found');
+    }
+  });
