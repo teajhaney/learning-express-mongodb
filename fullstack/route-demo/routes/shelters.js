@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const port = 3000;
+
 
 // router.get('/shelters', (req, res) => {
 //   res.send('ALL SHELTERS');
