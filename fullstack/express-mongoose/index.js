@@ -92,6 +92,7 @@ app.post(
 //     next(err);
 //   }
 // });
+/////
 app.get(
   '/products/:id',
   wrappAsync(async (req, res, next) => {
