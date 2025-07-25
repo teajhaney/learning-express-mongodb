@@ -20,7 +20,7 @@ app.get('/', (req, res) => {
   `
   );
 });
-
+  
 app.get('/register', (req, res) => {
   const { username = 'anonymous' } = req.query;
   if (username) {
@@ -42,3 +42,4 @@ app.get('/greet', (req, res) => {
 app.listen(3000, () => {
   console.log(`server started on port:  3000`);
 });
+  
