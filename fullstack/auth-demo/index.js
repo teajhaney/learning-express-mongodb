@@ -1,12 +1,22 @@
 const express = require('express');
 const app = express();
 const path = require('path');
+const session = require('express-session');
+
 const User = require('./model/user');
 const connectDB = require('./mongoose');
 const { hashPassword, comparePassword } = require('./utils');
 connectDB();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(
+  session({
+    secret: 'secret',
+    resave: false,
+    saveUninitialized: true,
+    // cookie: { maxAge: 60000 },
+  })
+);
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
@@ -16,7 +26,11 @@ app.get('/', (req, res) => {
 });
 
 app.get('/register', (req, res) => {
-  res.render('register');
+  if (req.session.user_id) {
+    return res.redirect('/secret');
+  } else {
+    res.render('register');
+  }
 });
 
 app.post('/register', async (req, res) => {
@@ -28,38 +42,58 @@ app.post('/register', async (req, res) => {
       password: hashedPassword,
     });
     await user.save();
-    res.redirect('/');
+    req.session.user_id = user._id;
+    res.redirect('/secret');
   } catch (err) {
     console.error('Registration failed:', err);
     res.status(500).send('Something went wrong during registration.');
   }
 });
 
-app.get('/login', (req, res) => {
-  res.render('login');
+app.get('/login', async (req, res) => {
+  if (req.session.user_id) {
+    return res.redirect('/secret');
+  } else {
+    res.render('login');
+  }
 });
 
 app.post('/login', async (req, res) => {
   const { username, password } = req.body;
   try {
     const user = await User.findOne({ username });
+
     const isPasswordValid = await comparePassword(password, user.password);
     if (!user) {
-      return res.status(400).send('User not found.');
+      return res.status(400).send('Invalid username or password.');
     }
     if (!isPasswordValid) {
       return res.status(401).send('Invalid username or password.');
     }
-
-    res.redirect('/secret');
+    if (isPasswordValid) {
+      req.session.user_id = user._id;
+      res.redirect('/secret');
+    }
   } catch (err) {
     console.error('Login failed:', err);
     return res.status(500).send('Something went wrong during login.');
   }
 });
 
+app.post('/logout', (req, res) => {
+  req.session.destroy(err => {
+    if (err) {
+      return res.status(500).send('Could not log out.');
+    }
+    res.redirect('/login');
+  });
+});
+
 app.get('/secret', async (req, res) => {
-  res.send('This is a secret page, can be viewd by logged in users only!!');
+  if (!req.session.user_id) {
+    return res.redirect('/login');
+  }
+  res.render('secret');
 });
 
 app.listen(3000, () => {
