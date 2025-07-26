@@ -21,6 +21,13 @@ app.use(
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
+const requireLogin = (req, res, next) => {
+  if (!req.session.user_id) {
+    return res.redirect('/login');
+  }
+  next();
+};
+
 app.get('/', (req, res) => {
   res.send('This is the home page');
 });
@@ -36,10 +43,9 @@ app.get('/register', (req, res) => {
 app.post('/register', async (req, res) => {
   const { username, password } = req.body;
   try {
-    const hashedPassword = await hashPassword(password);
     const user = new User({
-      username: username,
-      password: hashedPassword,
+      username,
+      password,
     });
     await user.save();
     req.session.user_id = user._id;
@@ -61,18 +67,12 @@ app.get('/login', async (req, res) => {
 app.post('/login', async (req, res) => {
   const { username, password } = req.body;
   try {
-    const user = await User.findOne({ username });
-
-    const isPasswordValid = await comparePassword(password, user.password);
-    if (!user) {
-      return res.status(400).send('Invalid username or password.');
-    }
-    if (!isPasswordValid) {
-      return res.status(401).send('Invalid username or password.');
-    }
-    if (isPasswordValid) {
-      req.session.user_id = user._id;
+    const foundUser = await User.findByUsername(username, password);
+    if (foundUser) {
+      req.session.user_id = foundUser._id;
       res.redirect('/secret');
+    } else {
+      res.redirect('/login');
     }
   } catch (err) {
     console.error('Login failed:', err);
@@ -89,10 +89,7 @@ app.post('/logout', (req, res) => {
   });
 });
 
-app.get('/secret', async (req, res) => {
-  if (!req.session.user_id) {
-    return res.redirect('/login');
-  }
+app.get('/secret', requireLogin, (req, res) => {
   res.render('secret');
 });
 
