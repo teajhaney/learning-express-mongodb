@@ -43,8 +43,12 @@ const runQueryExample = async () => {
 
     // const falseUser = await User.find({ isActive: false });
     // console.log(falseUser);
-    const selectedField = await User.find({}).select('name email -_id');
-    console.log(selectedField);
+    // const selectedField = await User.find({}).select('name email -_id');
+    // console.log(selectedField);
+    // const limitedUser = await User.find({}).limit(3).skip(1);
+    // console.log(limitedUser);
+    const sortUser = await User.find({}).sort({ age: +1 });
+    console.log(sortUser);
   } catch (error) {
     console.error('Error running query example:', error);
   } finally {
