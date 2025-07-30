@@ -3,6 +3,7 @@ const express = require('express');
 const PORT = process.env.PORT;
 const app = express();
 const authRoutes = require('./routes/auth-routes');
+const homeRoutes = require('./routes/home-routes');
 const connectDB = require('./database/db');
 
 //connect to database
@@ -13,6 +14,9 @@ app.use(express.json());
 
 //user routes
 app.use('/api/auth', authRoutes);
+
+//home routes
+app.use('/api/home', homeRoutes);
 
 app.listen(PORT, () => {
   console.log('Server is running on port 3000');
