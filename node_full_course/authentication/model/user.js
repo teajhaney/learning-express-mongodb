@@ -32,12 +32,15 @@ const userSchema = new Schema(
 
 //login static method on user schema
 userSchema.statics.findUserByUsername = async function (username, password) {
-  const foundUser = await this.findOne({ username });
-  if (!foundUser) {
-    throw new Error('User not found');
+  const user = await this.findOne({ username });
+  if (!user) {
+    const error = new Error('User not found');
+    error.statusCode = 404;
+    throw error;
   }
-  const isPasswordValid = await comparePassword(password, foundUser.password);
-  return isPasswordValid ? foundUser : false;
+  //check password validity
+  const isPasswordValid = await comparePassword(password, user.password);
+  return isPasswordValid ? user : false;
 };
 
 //hash password on save user

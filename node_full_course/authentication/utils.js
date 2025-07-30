@@ -10,7 +10,7 @@ const asyncWrapper = fn => {
       if (error.name === 'CastError') {
         return res.status(404).json({
           success: false,
-          message: 'please provide valid crediencials',
+          message: 'Please provide valid credentials',
         });
       }
       res.status(500).json({
