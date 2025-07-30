@@ -5,7 +5,6 @@ const session = require('express-session');
 
 const User = require('./model/user');
 const connectDB = require('./mongoose');
-const { hashPassword, comparePassword } = require('./utils');
 connectDB();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

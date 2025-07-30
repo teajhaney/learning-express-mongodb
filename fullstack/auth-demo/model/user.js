@@ -23,7 +23,8 @@ userSchema.statics.findByUsername = async function (username, password) {
 };
 
 userSchema.pre('save', async function (next) {
-  if (this.isModified('password')) {
+	if (this.isModified('password')) {
+	 
     this.password = await hashPassword(this.password);
   }
   next();
