@@ -1,4 +1,4 @@
-const Image = require('./model/image');
+const Image = require('../model/image');
 const { uplaodToCloudinary } = require('../helpers/cloudinary-helpers');
 
 const imageUpload = async (req, res) => {
@@ -14,7 +14,7 @@ const imageUpload = async (req, res) => {
 
     //upload to cloudinary
 
-    const [url, publicID] = await uplaodToCloudinary(req.file.path);
+    const { url, publicID } = await uplaodToCloudinary(req.file.path);
 
     //store image url and public ID to mongodb
     const uplaodedImage = await Image.create({
@@ -30,7 +30,7 @@ const imageUpload = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    res.status(500).jsoan({
+    res.status(500).json({
       success: false,
       message: 'Something went wrong! Please try again',
     });

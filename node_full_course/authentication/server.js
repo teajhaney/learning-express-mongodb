@@ -5,7 +5,9 @@ const app = express();
 const authRoutes = require('./routes/auth-routes');
 const homeRoutes = require('./routes/home-routes');
 const adminRoutes = require('./routes/admin-routes');
+const imageRoutes = require('./routes/image-routes');
 const connectDB = require('./database/db');
+const { image } = require('./config/cloudinary');
 
 //connect to database
 connectDB();
@@ -20,7 +22,10 @@ app.use('/api/auth', authRoutes);
 app.use('/api/home', homeRoutes);
 //admin routes
 app.use('/api/admin', adminRoutes);
+//image routes
+app.use('/api/image', imageRoutes);
 
+//start server
 app.listen(PORT, () => {
   console.log('Server is running on port 3000');
 });
