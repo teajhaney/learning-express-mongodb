@@ -11,7 +11,7 @@ const Image = require('../model/image');
 const router = express.Router();
 
 //get images
-router.get('/', authMiddleware, fetchAllImage);
+router.get('/get', authMiddleware, fetchAllImage);
 
 //uplaod image
 router.post(
