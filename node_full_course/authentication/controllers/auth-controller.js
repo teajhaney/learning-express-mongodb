@@ -42,11 +42,6 @@ const registerUser = asyncWrapper(async (req, res) => {
 
 const loginUser = asyncWrapper(async (req, res) => {
   const { username, password } = req.body;
-  //   const foundUser = new User.find({
-  //     username,
-  //   });
-  //   const isPasswordValid = await comparePassword(password, foundUser.password);
-
   const foundUser = await User.findUserByUsername(username, password);
 
   if (!foundUser) {
