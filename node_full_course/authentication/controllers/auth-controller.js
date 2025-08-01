@@ -2,7 +2,7 @@ require('dotenv').config();
 const { asyncWrapper } = require('../utils');
 const User = require('../model/user');
 const jwt = require('jsonwebtoken');
-
+const { comparePassword, hashPassword } = require('../utils');
 //register controller
 const registerUser = asyncWrapper(async (req, res) => {
   const { username, email, password, role } = req.body;
@@ -58,7 +58,7 @@ const loginUser = asyncWrapper(async (req, res) => {
         role: foundUser.role,
       },
       process.env.JWT_SECRET_KEY,
-      { expiresIn: '1h' }
+      { expiresIn: '1h' } 
     );
     res.status(200).json({
       success: true,
@@ -69,7 +69,46 @@ const loginUser = asyncWrapper(async (req, res) => {
   }
 });
 
+//change password
+
+const changePassword = asyncWrapper(async (req, res) => {
+  const userId = req.userInfo.userID;
+  const { oldPassword, newPassword } = req.body;
+  //find current logged in user
+  const currentUser = await User.findById(userId);
+  if (!currentUser) {
+    return res.status(404).json({
+      success: false,
+      message: 'User not found',
+    });
+  }
+  //check if old password is valid
+  const isOldPasswordValid = await comparePassword(
+    oldPassword,
+    currentUser.password
+  );
+
+  if (!isOldPasswordValid) {
+    return res.status(401).json({
+      success: false,
+      message: 'Invalid old password! try again',
+    });
+  }
+
+  //   //hash new password
+  //   const hashedNewPassword = await hashPassword(newPassword);
+  //update password
+  currentUser.password = newPassword;
+  await currentUser.save();
+  res.status(200).json({
+    success: true,
+    message: 'Password changed successfully',
+    date: currentUser,
+  });
+});
+
 module.exports = {
   registerUser,
   loginUser,
+  changePassword,
 };
