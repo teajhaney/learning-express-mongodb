@@ -13,7 +13,7 @@ const imageUpload = asyncWrapper(async (req, res) => {
     });
   }
 
-  //upload to cloudinary
+  //upload to cloudinary.
   const { url, publicID } = await uplaodToCloudinary(req.file.path);
 
   //store image url and public ID to mongodb
