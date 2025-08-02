@@ -30,11 +30,16 @@
 
 
 		//get user from prompt
-		const userName = prompt('Enter your name:');
+		let userName = '';
+		while (!userName.trim()) {
+			userName = prompt('Enter your name:');
+		}
 
 
 		//emit thw user name to the server
-		socket.emit('join', userName);
+		if (userName) {
+			socket.emit('join', userName);
+		}
 
 
 		//display user to client has joined
@@ -43,7 +48,7 @@
 
 		})
 
-		
+
 		//display user left 
 		socket.on('userLeft', user => {
 			addMessage(`${user} has left the chat`);

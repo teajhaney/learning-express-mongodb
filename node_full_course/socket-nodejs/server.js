@@ -30,15 +30,23 @@ io.on('connection', socket => {
   });
 
   //handle disconnection
+  //   socket.on('disconnect', () => {
+  //     console.log('A user is now disconnected');
+  //     users.forEach(user => {
+  //       if (user === socket.userName) {
+  //         users.delete(socket.userName);
+  //         io.emit('userLeft', user);
+  //         io.emit('usersList', Array.from(users));
+  //       }
+  //     });
+  //   });
   socket.on('disconnect', () => {
     console.log('A user is now disconnected');
-    users.forEach(user => {
-      if ((user = socket.userName)) {
-        users.delete(socket.userName);
-        io.emit('userLeft', user);
-        io.emit('usersList', Array.from(users));
-      }
-    });
+    if (socket.userName) {
+      users.delete(socket.userName);
+      io.emit('userLeft', socket.userName);
+      io.emit('usersList', Array.from(users));
+    }
   });
 });
 
