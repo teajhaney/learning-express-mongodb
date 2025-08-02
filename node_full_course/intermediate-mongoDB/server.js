@@ -4,6 +4,7 @@ const PORT = process.env.PORT;
 const app = express();
 const connectDB = require('./database/db');
 const productRoutes = require('./routes/product-routes');
+const bookRoutes = require('./routes/book-routes');
 
 //connect to database
 connectDB();
@@ -12,6 +13,8 @@ connectDB();
 app.use(express.json());
 //product routes
 app.use('/api/products', productRoutes);
+//book routes
+app.use('/api/reference', bookRoutes);
 
 //start server
 app.listen(PORT, () => {
