@@ -23,21 +23,22 @@ const resolvers = {
       products.splice(index, 1);
       return true;
     },
-    // updateProduct: (_, { id, ...update }) => {
-    //   const product = products.find(product => product.id == id);
-    //   if (!product) return null;
-    //   product.title = title || product.title;
-    //   product.category = category || product.category;
-    //   product.price = price || product.price;
-    //   product.inStock = inStock || product.inStock;
-    //   return product;
-    // },
-    updateProduct: (_, { id, ...update }) => {
-      const index = products.find(product => product.id == id);
+
+    updateProduct: (_, { id, title, category, price, inStock }) => {
+      const index = products.findIndex(product => product.id == id);
       if (index === -1) return null;
-      const updatedProduct = { ...products[index], ...update };
+
+      const existing = products[index];
+
+      const updatedProduct = {
+        ...existing,
+        title: title ?? existing.title,
+        category: category ?? existing.category,
+        price: price ?? existing.price,
+        inStock: inStock ?? existing.inStock,
+      };
+
       products[index] = updatedProduct;
-      console.log('Updated product:', products[index]);
       return updatedProduct;
     },
   },
